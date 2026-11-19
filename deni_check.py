@@ -1,17 +1,20 @@
-import json, os, urllib.request
+import json, os, re, urllib.error, urllib.request
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 PLAYER = "Avdija"
-NTFY_TOPIC = os.environ.get("NTFY_TOPIC", "change-me-to-a-secret-name")
+TOPIC_RE = re.compile(r"^[-_A-Za-z0-9]{1,64}$")   # what ntfy accepts as a topic name
 BASE = "https://site.api.espn.com/apis/site/v2/sports/basketball/nba"
 STATUS_FILE = "status.json"
 IL = ZoneInfo("Asia/Jerusalem")
 
 # ---- settings you may want to change ----
 REPORT_HOUR = 19          # daily report at 19:00 Israel time, the evening before the game
-ALARM_TIME = (5, 30)      # time of the "דני" alarm on your iPhone (regular alarm minus 90 min), (hour, minute)
-CHECK_BEFORE_ALARM = 20   # minutes. If the game starts after the alarm time, the final check runs this long before the alarm
+ALARM_TIME = None         # None = shared mode: the final check is at game time and the "alarm" state stays published for
+                          # HOLD_HOURS, so many phones with different wake-up times can use the same status.json.
+                          # Or (hour, minute) = the "דני" alarm time of ONE person, e.g. (5, 30)
+HOLD_HOURS = 7            # shared mode only: how long after the game starts the "alarm" state stays published
+CHECK_BEFORE_ALARM = 20   # single-person mode only: if the game starts after the alarm time, the final check runs this many minutes before it
 NOTIFY_ON_CHANGE = False  # True = also notify on every status change between the report and the final check
 ISRAEL_CHANNEL = ""       # the TV channel that airs the games for you in Israel, e.g. "ספורט 5". Shown in the 19:00 report if not empty
 GUIDE_URL = ""            # optional: a URL that opens when you tap the 19:00 notification (e.g. a TV guide). Empty = no link
@@ -23,16 +26,38 @@ def get(url):
         return json.load(r)
 
 
+def topics():
+    """NTFY_TOPIC may hold one topic name or several, separated by commas or new lines."""
+    raw = os.environ.get("NTFY_TOPIC", "")
+    return [t.strip() for t in raw.replace("\n", ",").split(",") if t.strip()]
+
+
 def notify(title, msg, click=None):
+    names = topics()
+    if not names:
+        raise RuntimeError("NTFY_TOPIC is empty: define the secret NTFY_TOPIC with at least one topic name")
     headers = {"Title": title.encode("utf-8"), "Priority": "high"}
     if click:
         headers["Click"] = click   # tapping the notification opens this URL
-    req = urllib.request.Request(
-        f"https://ntfy.sh/{NTFY_TOPIC}",
-        data=msg.encode("utf-8"),
-        headers=headers,
-    )
-    urllib.request.urlopen(req, timeout=20)
+    sent, problems = 0, []
+    for i, name in enumerate(names, 1):
+        if not TOPIC_RE.match(name):
+            problems.append(f"topic #{i}: invalid name (only letters, digits, - and _, up to 64 characters)")
+            continue
+        try:
+            req = urllib.request.Request(f"https://ntfy.sh/{name}", data=msg.encode("utf-8"), headers=headers)
+            urllib.request.urlopen(req, timeout=20)
+            sent += 1
+        except urllib.error.HTTPError as e:
+            body = e.read().decode("utf-8", "replace")[:200]
+            problems.append(f"topic #{i}: ntfy answered HTTP {e.code} {body}")
+        except Exception as e:
+            problems.append(f"topic #{i}: {type(e).__name__}: {e}")
+    for p in problems:
+        print("WARNING:", p)
+    if sent == 0:
+        # nobody got it: fail, so the state is not saved and the next run tries again
+        raise RuntimeError("could not send the notification to any topic")
 
 
 def opponent_name(ev):
@@ -90,6 +115,9 @@ def timeline(start):
     start_il = start.astimezone(IL)
     report_at = (start_il - timedelta(days=1)).replace(
         hour=REPORT_HOUR, minute=0, second=0, microsecond=0)
+    if ALARM_TIME is None:
+        # shared mode: final check at game time, state stays published for HOLD_HOURS after the start
+        return report_at, start_il, start_il + timedelta(hours=HOLD_HOURS)
     # the first occurrence of the alarm time after (game start - 8h)
     ref = start_il - timedelta(hours=8)
     alarm_at = ref.replace(hour=ALARM_TIME[0], minute=ALARM_TIME[1], second=0, microsecond=0)
