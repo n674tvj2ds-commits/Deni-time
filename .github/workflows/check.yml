@@ -1,0 +1,24 @@
+name: deni-check
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 deni_check.py
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+      - name: Commit status
+        run: |
+          git config user.name "bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add status.json
+          git diff --staged --quiet || git commit -m "update status"
+          git push
