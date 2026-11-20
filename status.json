@@ -1,5 +1,5 @@
 {
-  "state": "out",
+  "state": "done",
   "alarm": false,
   "game_id": "401910020",
   "game": "Portland Trail Blazers at Milwaukee Bucks",
@@ -9,5 +9,5 @@
   "alarm_at_il": "2026-11-20T10:00:00+02:00",
   "injury_status": "לא משחק",
   "report_game": "401910020",
-  "updated_utc": "2026-11-20T01:11:41.117079+00:00"
+  "updated_utc": "2026-11-20T08:10:47.180810+00:00"
 }
