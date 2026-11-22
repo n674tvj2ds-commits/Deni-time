@@ -1,13 +1,11 @@
 {
-  "state": "done",
+  "state": "no_game",
   "alarm": false,
-  "game_id": "401910024",
-  "game": "Portland Trail Blazers at New York Knicks",
-  "opponent": "New York Knicks",
-  "game_start_utc": "2026-11-22T00:30:00+00:00",
-  "final_check_il": "2026-11-22T02:30:00+02:00",
-  "alarm_at_il": "2026-11-22T09:30:00+02:00",
-  "injury_status": "בהרכב",
+  "game_id": null,
+  "game": null,
+  "opponent": null,
+  "game_start_utc": null,
+  "injury_status": null,
   "report_game": "401910024",
-  "updated_utc": "2026-11-22T08:20:25.831459+00:00"
+  "updated_utc": "2026-11-22T09:10:36.117169+00:00"
 }
