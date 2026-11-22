@@ -1,6 +1,6 @@
 {
-  "state": "alarm",
-  "alarm": true,
+  "state": "done",
+  "alarm": false,
   "game_id": "401910024",
   "game": "Portland Trail Blazers at New York Knicks",
   "opponent": "New York Knicks",
@@ -9,5 +9,5 @@
   "alarm_at_il": "2026-11-22T09:30:00+02:00",
   "injury_status": "בהרכב",
   "report_game": "401910024",
-  "updated_utc": "2026-11-22T01:11:50.296347+00:00"
+  "updated_utc": "2026-11-22T08:20:25.831459+00:00"
 }
