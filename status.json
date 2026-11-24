@@ -1,13 +1,13 @@
 {
-  "state": "waiting",
-  "alarm": false,
+  "state": "alarm",
+  "alarm": true,
   "game_id": "401910037",
   "game": "Portland Trail Blazers at Philadelphia 76ers",
   "opponent": "Philadelphia 76ers",
   "game_start_utc": "2026-11-24T00:00:00+00:00",
   "final_check_il": "2026-11-24T02:00:00+02:00",
   "alarm_at_il": "2026-11-24T09:00:00+02:00",
-  "injury_status": "לא ברשימת הפציעות",
+  "injury_status": "בהרכב",
   "report_game": "401910037",
-  "updated_utc": "2026-11-23T17:48:34.722899+00:00"
+  "updated_utc": "2026-11-24T00:29:53.957465+00:00"
 }
