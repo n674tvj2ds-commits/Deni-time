@@ -1,6 +1,6 @@
 {
-  "state": "alarm",
-  "alarm": true,
+  "state": "done",
+  "alarm": false,
   "game_id": "401909325",
   "game": "San Antonio Spurs at Portland Trail Blazers",
   "opponent": "San Antonio Spurs",
@@ -9,5 +9,5 @@
   "alarm_at_il": "2026-11-26T12:00:00+02:00",
   "injury_status": "בהרכב",
   "report_game": "401909325",
-  "updated_utc": "2026-11-26T03:48:19.341499+00:00"
+  "updated_utc": "2026-11-26T10:38:44.576321+00:00"
 }
