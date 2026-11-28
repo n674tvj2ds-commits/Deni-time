@@ -1,13 +1,11 @@
 {
-  "state": "done",
+  "state": "no_game",
   "alarm": false,
-  "game_id": "401909336",
-  "game": "Golden State Warriors at Portland Trail Blazers",
-  "opponent": "Golden State Warriors",
-  "game_start_utc": "2026-11-28T02:30:00+00:00",
-  "final_check_il": "2026-11-28T04:30:00+02:00",
-  "alarm_at_il": "2026-11-28T11:30:00+02:00",
-  "injury_status": "בהרכב",
+  "game_id": null,
+  "game": null,
+  "opponent": null,
+  "game_start_utc": null,
+  "injury_status": null,
   "report_game": "401909336",
-  "updated_utc": "2026-11-28T09:34:01.360205+00:00"
+  "updated_utc": "2026-11-28T10:33:41.103657+00:00"
 }
