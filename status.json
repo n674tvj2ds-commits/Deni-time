@@ -1,11 +1,13 @@
 {
-  "state": "no_game",
+  "state": "waiting",
   "alarm": false,
-  "game_id": null,
-  "game": null,
-  "opponent": null,
-  "game_start_utc": null,
+  "game_id": "401910058",
+  "game": "New Orleans Pelicans at Portland Trail Blazers",
+  "opponent": "New Orleans Pelicans",
+  "game_start_utc": "2026-11-29T23:00:00+00:00",
+  "final_check_il": "2026-11-30T01:00:00+02:00",
+  "alarm_at_il": "2026-11-30T08:00:00+02:00",
   "injury_status": null,
   "report_game": "401909336",
-  "updated_utc": "2026-11-28T10:33:41.103657+00:00"
+  "updated_utc": "2026-11-28T11:29:21.529073+00:00"
 }
