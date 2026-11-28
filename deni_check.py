@@ -17,6 +17,9 @@ HOLD_HOURS = 7            # shared mode only: how long after the game starts the
 CHECK_BEFORE_ALARM = 20   # single-person mode only: if the game starts after the alarm time, the final check runs this many minutes before it
 NOTIFY_ON_CHANGE = False  # True = also notify on every status change between the report and the final check
 ISRAEL_CHANNEL = ""       # the TV channel that airs the games for you in Israel, e.g. "ספורט 5". Shown in the 19:00 report if not empty
+ASK_TO_WAKE = True        # True = the 19:00 report has a "yes, wake me" button; the phone sets the alarm only after a yes
+ANSWER_SUFFIX = "-answer" # the answer of each person goes to <his topic>-answer
+YES_LABEL = "כן, תעיר אותי"
 GUIDE_URL = ""            # optional: a URL that opens when you tap the 19:00 notification (e.g. a TV guide). Empty = no link
 # -----------------------------------------
 
@@ -32,20 +35,27 @@ def topics():
     return [t.strip() for t in raw.replace("\n", ",").split(",") if t.strip()]
 
 
-def notify(title, msg, click=None):
+def notify(title, msg, click=None, ask=False):
+    """Sends to every topic. ask=True adds a "yes, wake me" button: tapping it posts "yes" to <topic>-answer,
+    and the person's own Shortcut reads that answer, so every friend decides for himself."""
     names = topics()
     if not names:
         raise RuntimeError("NTFY_TOPIC is empty: define the secret NTFY_TOPIC with at least one topic name")
-    headers = {"Title": title.encode("utf-8"), "Priority": "high"}
-    if click:
-        headers["Click"] = click   # tapping the notification opens this URL
     sent, problems = 0, []
     for i, name in enumerate(names, 1):
         if not TOPIC_RE.match(name):
             problems.append(f"topic #{i}: invalid name (only letters, digits, - and _, up to 64 characters)")
             continue
+        payload = {"topic": name, "title": title, "message": msg, "priority": 4}
+        if click:
+            payload["click"] = click   # tapping the notification opens this URL
+        answer = name + ANSWER_SUFFIX
+        if ask and TOPIC_RE.match(answer):
+            payload["actions"] = [{"action": "http", "label": YES_LABEL, "method": "POST",
+                                   "url": f"https://ntfy.sh/{answer}", "body": "yes", "clear": True}]
         try:
-            req = urllib.request.Request(f"https://ntfy.sh/{name}", data=msg.encode("utf-8"), headers=headers)
+            req = urllib.request.Request("https://ntfy.sh/", data=json.dumps(payload).encode("utf-8"),
+                                         headers={"Content-Type": "application/json"})
             urllib.request.urlopen(req, timeout=20)
             sent += 1
         except urllib.error.HTTPError as e:
@@ -228,7 +238,9 @@ def decide(now, game, old):
                 title, extra = "דני לא משחק", f"\nבדיקה סופית בשעת המשחק ({check_txt})."
             else:
                 title, extra = "דני בסימן שאלה", f"\nלא הוגדר שעון. בדיקה סופית בשעת המשחק ({check_txt})."
-            msgs.append((title, body(label, extra, tv=True), GUIDE_URL or None))
+            if ASK_TO_WAKE:
+                extra += "\nרוצה לקום למשחק? לחץ על הכפתור למטה (משוך את ההתראה למטה). בלי לחיצה לא יופעל שעון."
+            msgs.append((title, body(label, extra, tv=True), GUIDE_URL or None, ASK_TO_WAKE))
             report_game = game["id"]
         elif label != status:
             msgs.append(("דני - שינוי בסטטוס", body(label)))
@@ -260,7 +272,7 @@ def main(now=None):
         print("check failed, keeping the previous state:", e)
         return
 
-    for item in msgs:          # (title, message) or (title, message, click_url)
+    for item in msgs:          # (title, message) or (title, message, click_url, ask)
         notify(*item)
 
     # write the file only when something changed, so the repo does not get a commit every run
